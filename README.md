@@ -1,5 +1,7 @@
 # NSX Advanced Load Balancer (AVI Networks) Ansible Example
-Simple automation of load balancing and GSLB concepts
+Simple automation of load balancing and GSLB concepts.
+
+The NSX Advanced load balancer (formerly https://avinetworks.com/ ) is highly automatable multi-cloud application services LB with elastic application delivery, security, and pervasive analytics across data centers and clouds. Its architectural advantages makes it easy to apply load balancing, web application firewall and container ingress to any application.
 
 The ansible playbooks here will deploy the load balancing needed for a 3 tier application 
 Some points on this ansible example:
