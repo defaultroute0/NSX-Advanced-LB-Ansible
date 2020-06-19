@@ -1,2 +1,21 @@
 # NSX Advanced Load Balancer (AVI Networks) Ansible Example
 Simple automation of load balancing and GSLB concepts
+
+The ansible playbooks here will deploy the load balancing needed for a 3 tier application 
+Some points on this ansible example:
+
+- Its assumes you have pre existing, two sites each with a AVI controller(s) setup, DNS-VS, and subdomain delegation and owned by AVI GSLB function
+- the 3 tier test app at each SITEA and SITEB
+- At each site the app has: 
+    2 x Web servers (load balanced)
+    2 x App servers (load balanced)
+    1 x DB servers, (no load balancer here)
+- Ansible (avi_create_vs_pool.yml) will create the POOLS, VSVIP, and finally the VS in this order
+- Ansible (avi_create_gslb.yml) will create the GSLB record which points to the above apps in each site
+
+Installation of Ansible and AVI Networks SDK is here
+https://avinetworks.com/docs/18.2/configuring-ansible-for-avi-vantage/configuring-ansible-for-avi-vantage.pdf
+
+Configuring Ansible for AVI Vantage
+https://avinetworks.com/docs/18.2/configuring-ansible-for-avi-vantage/
+
