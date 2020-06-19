@@ -14,17 +14,17 @@ Some points on this ansible example:
 - Ansible (avi_create_gslb.yml) will create the GSLB record which points to the above apps in each site
 
 - Here's what Ansible will push as a demonstration:
-•	SiteA pools
-•	SiteA VSVIPS
-•	SiteA VS Web Tier  auto allocate VSVIP out of AVI IPAM
-•	SiteA VS App Tier  allocate VIP from static param
-•	SiteB pools
-•	SiteB VSVIPS
-•	SiteB VS Web Tier  auto allocate VSVIP out of AVI IPAM
-•	SiteB VS App Tier  allocate VIP from static param
-•	GSLB Pools for each site
-•	GSLB record for the app sync across both sites
-•	GSLB will direct traffic round robin between the two apps with very short TTL so we can see it in action
+    SiteA pools
+    SiteA VSVIPS
+    SiteA VS Web Tier  auto allocate VSVIP out of AVI IPAM
+    SiteA VS App Tier  allocate VIP from static param
+    SiteB pools
+    SiteB VSVIPS
+    SiteB VS Web Tier  auto allocate VSVIP out of AVI IPAM
+    SiteB VS App Tier  allocate VIP from static param
+    GSLB Pools for each site
+    GSLB record for the app sync across both sites
+    GSLB will direct traffic round robin between the two apps with very short TTL so we can see it in action
 
 Installation of Ansible and AVI Networks SDK is here
 https://avinetworks.com/docs/18.2/configuring-ansible-for-avi-vantage/configuring-ansible-for-avi-vantage.pdf
