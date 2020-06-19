@@ -1,0 +1,151 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/creds.yml"
+  vars:
+    tenant: admin
+  roles:
+    - role: avinetworks.avisdk
+
+  tasks:
+    # Deleting two VS at SITEB
+    #########################
+    - name: Deleting bookstore_siteB_web_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: bookstore_siteB_web_vs
+        state: absent
+
+
+    - name: Deleting bookstore_siteB_app_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: bookstore_siteB_app_vs
+        state: absent
+
+
+    # Deleting two VS at SITEA
+    #########################
+    - name: Deleting bookstore_siteA_web_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: bookstore_siteA_web_vs
+        state: absent
+
+    - name: Deleting bookstore_siteA_app_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: bookstore_siteA_app_vs
+        state: absent
+
+
+    # now we delete the two VSVIPS in at siteA
+    ##########################################
+    - name: Deleting bookstore_siteA_web_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: bookstore_siteA_web_vsvip
+        state: absent
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+
+
+    - name: Deleting bookstore_siteA_app_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: bookstore_siteA_app_vsvip
+        state: absent
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+
+
+
+    # now we delete the two VSVIPS in at siteB
+    ########################################
+    - name: Deleting bookstore_siteB_web_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: bookstore_siteB_web_vsvip
+        state: absent
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+
+    - name: Deleting bookstore_siteB_app_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: "bookstore_siteB_app_vsvip"
+        state: absent
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+
+
+
+## POOLS ###########################
+####################################
+
+    - name: DELETE SITEB - WEB POOL
+    # SITEB - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: "bookstore_siteB_web_pool"
+        state: absent
+        tenant: "admin"
+
+    - name: DELETE SITEB - APP POOL
+    # SITEB - APP POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        name: "bookstore_siteB_app_pool"
+        state: absent
+        tenant: "admin"
+
+    - name: DELETE SITEA - WEB POOL
+    # SITEA - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: "bookstore_siteA_web_pool"
+        state: absent
+        tenant: "admin"
+
+ 
+    - name: DELETE SITEA - APP POOL
+    # SITEA - APP POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: "bookstore_siteA_app_pool"
+        state: absent
+        tenant: "admin"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
