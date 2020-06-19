@@ -1,0 +1,455 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/creds.yml"
+  vars:
+    tenant: admin
+  roles:
+    - role: avinetworks.avisdk
+
+  # this is to suit the 3 tier test app at each SITEA and SITEB
+  # the app has 2 x Web servers, which get load balanced
+  # the app has 2 x App servers, which get load balanced
+  # the app has 1 x DB servers, which gets load balanced
+  # we create the POOLS, VSVIP, and finally the VS in this order, RYan
+  # we also working with these vars
+  # bookstore_siteA_web_vs_ip
+  # bookstore_siteA_app_vs_ip
+  # bookstore_siteB_web_vs_ip
+  # bookstore_siteB_app_vs_ip
+
+  # we create two pools in each site now
+  #####################################
+  tasks:
+    - name: Create or Update SITEA - WEB POOL
+    # SITEA - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c1_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteA_web_pool"
+        state: present
+        server_reselect:
+          enabled: false
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '10.0.1.11'
+              type: 'V4'
+          - port: 80
+            ip:
+              addr: '10.0.1.12'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
+ 
+    - name: Create or Update SITEA - APP POOL
+    # SITEA - APP POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c1_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteA_app_pool"
+        state: present
+        server_reselect:
+          enabled: false
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '10.0.2.11'
+              type: 'V4'
+          - port: 80
+            ip:
+              addr: '10.0.2.12'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
+
+    - name: Create or Update SITEB - WEB POOL
+    # SITEB - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c2_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteB_web_pool"
+        state: present
+        server_reselect:
+          enabled: false
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '11.0.1.11'
+              type: 'V4'
+          - port: 80
+            ip:
+              addr: '11.0.1.12'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
+ 
+    - name: Create or Update SITEB - APP POOL
+    # SITEB - APP POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c2_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteB_app_pool"
+        state: present
+        server_reselect:
+          enabled: false
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '11.0.2.11'
+              type: 'V4'
+          - port: 80
+            ip:
+              addr: '11.0.2.12'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
+
+# now we create the two VSVIPS in at siteA
+##########################################
+    - name: configure bookstore_siteA_web_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        dns_info:
+        - fqdn: "bookstoresiteAwebvsvip.anz.sddc.local"
+          ttl: 5
+        name: bookstore_siteA_web_vsvip
+        state: present
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+        vip:
+          - vip_id: "1"
+            #ip_address: 
+              #addr: "{{bookstore_siteA_web_vsvip_ip}}"
+              #type: V4
+            #network_ref: "/api/network?name=24 - VIP-LB LS"
+            ipam_network_subnet:
+              network_ref: "/api/network/network-c0d79983-e0d1-4d7d-83ff-1f9bfd9f2515"
+              #network_ref: "/api/network?name=24 - VIP-LB LS"
+              subnet:
+                ip_addr:
+                  addr: 10.20.10.0
+                  type: V4
+                mask: 24
+            auto_allocate_ip: true
+          # - vip_id: "1"
+          #   AWS auto_allocate_ip: true
+          #   AWS auto_allocate_floating_ip: false
+          #   AWS subnet_uuid: "{{ pub_subnet3 }}"  
+
+    - name: configure bookstore_siteA_app_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        dns_info:
+        - fqdn: "bookstoresiteAappvsvip.anz.sddc.local"
+          ttl: 5
+        name: bookstore_siteA_app_vsvip
+        state: present
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+        vip:
+          - vip_id: "1"
+            ip_address: 
+              addr: "{{bookstore_siteA_app_vsvip_ip}}"
+              type: V4
+            #network_ref: '24 - VIP-LB LS'
+            #subnet: '10.20.10.0/24'
+            #auto_allocate_ip: true
+            # #auto_allocate_floating_ip: true
+            # subnet_uuid: "{{ pub_subnet }}"
+          # - vip_id: "1"
+          #   auto_allocate_ip: true
+          #   auto_allocate_floating_ip: false
+          #   subnet_uuid: "{{ pub_subnet3 }}"  
+
+
+    # now we create the two  VSVIPS in at siteB
+    ########################################
+    - name: configure bookstore_siteB_web_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        dns_info:
+        - fqdn: "bookstoresiteBwebvsvip.anz.sddc.local"
+          ttl: 5
+        name: bookstore_siteB_web_vsvip
+        state: present
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+        vip:
+          - vip_id: "1"
+            #ip_address: 
+              #addr: "{{bookstore_siteB_web_vsvip_ip}}"
+              #type: V4
+            #network_ref: "/api/network?name=24 - VIP-LB LS"
+            ipam_network_subnet:
+              network_ref: "/api/network/network-e65f0d3c-146c-4cf2-9c3c-5f45107732d2"
+              #network_ref: "/api/network?name=24 - VIP-LB LS"
+              subnet:
+                ip_addr:
+                  addr: 10.20.10.0
+                  type: V4
+                mask: 24
+            auto_allocate_ip: true
+          # - vip_id: "1"
+          #   AWS auto_allocate_ip: true
+          #   AWS auto_allocate_floating_ip: false
+          #   AWS subnet_uuid: "{{ pub_subnet3 }}"  
+
+    - name: configure bookstore_siteB_app_vsvip
+      avi_vsvip:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        #cloud_ref: /api/cloud/?name=Default_Cloud
+        dns_info:
+        - fqdn: "bookstoresiteBappvsvip.anz.sddc.local"
+          ttl: 5
+        name: bookstore_siteB_app_vsvip
+        state: present
+        #tenant_ref: "/api/tenant?name=admin"
+        tenant: "admin"
+        vip:
+          - vip_id: "1"
+            ip_address: 
+              addr: "{{bookstore_siteB_app_vsvip_ip}}"
+              type: V4
+            #network_ref: '24 - VIP-LB LS'
+            #subnet: '10.20.10.0/24'
+            #auto_allocate_ip: true
+            # #auto_allocate_floating_ip: true
+            # subnet_uuid: "{{ pub_subnet }}"
+          # - vip_id: "1"
+          #   auto_allocate_ip: true
+          #   auto_allocate_floating_ip: false
+          #   subnet_uuid: "{{ pub_subnet3 }}"  
+
+
+
+    # Creating two VS at SITEA
+    #########################
+    - name: configure bookstore_siteA_web_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        analytics_policy:
+          all_headers: true
+          client_insights: ACTIVE
+          full_client_logs:
+            duration: 0
+            enabled: true
+            throttle: 0
+          metrics_realtime_update:
+            duration: 0
+            enabled: true
+          significant_log_throttle: 0
+          udf_log_throttle: 0
+        application_profile_ref: /api/applicationprofile/?name=System-HTTP
+        #cloud_ref: /api/cloud/?name=vmware_cloud
+        #cloud_type: CLOUD_VCENTER
+        #content_rewrite:
+        #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
+        #http_policies:
+        #- http_policy_set_ref: /api/httppolicyset/?name=demoavi-HTTP-Policy-Set
+        #  index: 11
+        name: bookstore_siteA_web_vs
+        network_profile_ref: /api/networkprofile/?name=System-TCP-Proxy
+        #network_security_policy_ref: /api/networksecuritypolicy/?name=demoavi-ns
+        pool_ref: "/api/pool/?name=bookstore_siteA_web_pool"
+        se_group_ref: /api/serviceenginegroup/?name=Default-Group
+        traffic_enabled: true
+        vsvip_ref: "/api/vsvip/?name=bookstore_siteA_web_vsvip"
+        services:
+        - enable_ssl: false
+          port: 80
+          port_range_end: 80
+        #- enable_ssl: true
+        #  port: 443
+        #  port_range_end: 443
+        #ssl_key_and_certificate_refs:
+        #  - "/api/sslkeyandcertificate/?name=entrust_ec_cert_app"
+        #  - "/api/sslkeyandcertificate?name=entrust_rsa_cert_app"
+
+
+
+
+
+    - name: configure bookstore_siteA_app_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        analytics_policy:
+          all_headers: true
+          client_insights: ACTIVE
+          full_client_logs:
+            duration: 0
+            enabled: true
+            throttle: 0
+          metrics_realtime_update:
+            duration: 0
+            enabled: true
+          significant_log_throttle: 0
+          udf_log_throttle: 0
+        application_profile_ref: /api/applicationprofile/?name=System-HTTP
+        #cloud_ref: /api/cloud/?name=vmware_cloud
+        #cloud_type: CLOUD_VCENTER
+        #content_rewrite:
+        #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
+        #http_policies:
+        #- http_policy_set_ref: /api/httppolicyset/?name=demoavi-HTTP-Policy-Set
+        #  index: 11
+        name: bookstore_siteA_app_vs
+        network_profile_ref: /api/networkprofile/?name=System-TCP-Proxy
+        #network_security_policy_ref: /api/networksecuritypolicy/?name=demoavi-ns
+        pool_ref: "/api/pool/?name=bookstore_siteA_app_pool"
+        se_group_ref: /api/serviceenginegroup/?name=Default-Group
+        traffic_enabled: true
+        vsvip_ref: "/api/vsvip/?name=bookstore_siteA_app_vsvip"
+        services:
+        - enable_ssl: false
+          port: 80
+          port_range_end: 80
+        #- enable_ssl: true
+        #  port: 443
+        #  port_range_end: 443
+        #ssl_key_and_certificate_refs:
+        #  - "/api/sslkeyandcertificate/?name=entrust_ec_cert_app"
+        #  - "/api/sslkeyandcertificate?name=entrust_rsa_cert_app"
+
+
+
+    # Creating two VS at SITEB
+    #########################
+    - name: configure bookstore_siteB_web_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        analytics_policy:
+          all_headers: true
+          client_insights: ACTIVE
+          full_client_logs:
+            duration: 0
+            enabled: true
+            throttle: 0
+          metrics_realtime_update:
+            duration: 0
+            enabled: true
+          significant_log_throttle: 0
+          udf_log_throttle: 0
+        application_profile_ref: /api/applicationprofile/?name=System-HTTP
+        #cloud_ref: /api/cloud/?name=vmware_cloud
+        #cloud_type: CLOUD_VCENTER
+        #content_rewrite:
+        #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
+        #http_policies:
+        #- http_policy_set_ref: /api/httppolicyset/?name=demoavi-HTTP-Policy-Set
+        #  index: 11
+        name: bookstore_siteB_web_vs
+        network_profile_ref: /api/networkprofile/?name=System-TCP-Proxy
+        #network_security_policy_ref: /api/networksecuritypolicy/?name=demoavi-ns
+        pool_ref: "/api/pool/?name=bookstore_siteB_web_pool"
+        se_group_ref: /api/serviceenginegroup/?name=Default-Group
+        traffic_enabled: true
+        vsvip_ref: "/api/vsvip/?name=bookstore_siteB_web_vsvip"
+        services:
+        - enable_ssl: false
+          port: 80
+          port_range_end: 80
+        #- enable_ssl: true
+        #  port: 443
+        #  port_range_end: 443
+        #ssl_key_and_certificate_refs:
+        #  - "/api/sslkeyandcertificate/?name=entrust_ec_cert_app"
+        #  - "/api/sslkeyandcertificate?name=entrust_rsa_cert_app"
+
+    - name: configure bookstore_siteB_app_vs
+      avi_virtualservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        analytics_policy:
+          all_headers: true
+          client_insights: ACTIVE
+          full_client_logs:
+            duration: 0
+            enabled: true
+            throttle: 0
+          metrics_realtime_update:
+            duration: 0
+            enabled: true
+          significant_log_throttle: 0
+          udf_log_throttle: 0
+        application_profile_ref: /api/applicationprofile/?name=System-HTTP
+        #cloud_ref: /api/cloud/?name=vmware_cloud
+        #cloud_type: CLOUD_VCENTER
+        #content_rewrite:
+        #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
+        #http_policies:
+        #- http_policy_set_ref: /api/httppolicyset/?name=demoavi-HTTP-Policy-Set
+        #  index: 11
+        name: bookstore_siteB_app_vs
+        network_profile_ref: /api/networkprofile/?name=System-TCP-Proxy
+        #network_security_policy_ref: /api/networksecuritypolicy/?name=demoavi-ns
+        pool_ref: "/api/pool/?name=bookstore_siteB_app_pool"
+        se_group_ref: /api/serviceenginegroup/?name=Default-Group
+        traffic_enabled: true
+        vsvip_ref: "/api/vsvip/?name=bookstore_siteB_app_vsvip"
+        services:
+        - enable_ssl: false
+          port: 80
+          port_range_end: 80
+        #- enable_ssl: true
+        #  port: 443
+        #  port_range_end: 443
+        #ssl_key_and_certificate_refs:
+        #  - "/api/sslkeyandcertificate/?name=entrust_ec_cert_app"
+        #  - "/api/sslkeyandcertificate?name=entrust_rsa_cert_app"
+
+
+
+
+
