@@ -94,6 +94,7 @@
         site_persistence_enabled: false
         controller_health_status_enabled: true
         pool_algorithm: GSLB_SERVICE_ALGORITHM_PRIORITY
+        ttl: 2
         use_edns_client_subnet: false
         enabled: true
         is_federated: true
