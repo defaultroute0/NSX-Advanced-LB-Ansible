@@ -94,6 +94,7 @@
         site_persistence_enabled: false
         controller_health_status_enabled: true
         pool_algorithm: GSLB_SERVICE_ALGORITHM_PRIORITY
+        # tune the TTL down just for POC so we can see the GSLB record via DIG switch between the two DC pools quickly
         ttl: 2
         use_edns_client_subnet: false
         enabled: true
