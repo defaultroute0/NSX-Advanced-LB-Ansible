@@ -28,6 +28,9 @@ Some points on this ansible example:
   -  GSLB record for the app sync across both sites
   -  GSLB will direct traffic round robin between the two apps with very short TTL so we can see it in action
 
+The scripts for 'nocloud' were used pre NSX-T Cloud connector available
+The scripts for 'nsxtcloud' were used post NSX-T Cloud connector being GA
+
 Installation of Ansible and AVI Networks SDK is here
 https://avinetworks.com/docs/18.2/configuring-ansible-for-avi-vantage/configuring-ansible-for-avi-vantage.pdf
 
