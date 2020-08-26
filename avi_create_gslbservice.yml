@@ -14,6 +14,8 @@
 # bookstore_siteB_web_vs:
 # bookstore_siteB_app_vs: 
 
+# this is for NSX-T configured as NO ACCESS aka NO CLOUD, manual SE setup 
+
   tasks:
     - name: lookup cluster 1 bookstore_siteA_web_vs VS
     # get SITE1 VIRTUAL SERVICE IP
