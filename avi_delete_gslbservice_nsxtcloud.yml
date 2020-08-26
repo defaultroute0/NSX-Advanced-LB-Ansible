@@ -1,0 +1,20 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - "vars/creds.yml"
+  vars:
+    tenant: admin
+  roles:
+    - role: avinetworks.avisdk
+  tasks:
+    # now delete the gslb record off the LEADER controller as its 
+    # where the config changes happen for GSLB, 
+    # bye bye baby goodbye
+    - name: DELETE global bookstore.avidemo.anz.sddc.local - GSLB record
+      avi_gslbservice:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        name: bookstore.avidemo.anz.sddc.local
+        state: absent
+        tenant: admin
