@@ -53,7 +53,33 @@
         #tenant_ref: /api/tenant/?name=admin
         tenant: "admin"
 
- 
+    - name: Create or Update SITEA - WEB POOL redirection
+    # SITEA - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c1_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteA_web_vs_contact"
+        state: present
+        server_reselect:
+          enabled: false
+        cloud_ref: /api/cloud/?name=nsxtcloud
+        tier1_lr: Ryan-AVI-VIP
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '10.20.80.7'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
     - name: Create or Update SITEA - APP POOL
     # SITEA - APP POOL
       avi_pool:
@@ -117,7 +143,33 @@
         #tenant_ref: /api/tenant/?name=admin
         tenant: "admin"
 
- 
+    - name: Create or Update SITEB - WEB POOL redirection
+    # SITEB - WEB POOL
+      avi_pool:
+        avi_credentials: "{{ avi_credentials }}"
+        analytics_policy:
+          enable_realtime_metrics: true
+        controller: "{{ c2_address }}"
+        lb_algorithm: LB_ALGORITHM_ROUND_ROBIN
+        name: "bookstore_siteB_web_vs_contact"
+        state: present
+        server_reselect:
+          enabled: false
+        cloud_ref: /api/cloud/?name=nsxtcloud
+        tier1_lr: Ryan-AVI-VIP
+        fail_action:
+          type: FAIL_ACTION_CLOSE_CONN
+        graceful_disable_timeout: 180
+        health_monitor_refs:
+          - '/api/healthmonitor?name=System-HTTP'
+        servers:
+          - port: 80
+            ip:
+              addr: '10.20.80.7'
+              type: 'V4'
+        #tenant_ref: /api/tenant/?name=admin
+        tenant: "admin"
+
     - name: Create or Update SITEB - APP POOL
     # SITEB - APP POOL
       avi_pool:
@@ -278,6 +330,58 @@
           #   subnet_uuid: "{{ pub_subnet3 }}"  
 
 
+    # Creating HTTP REDIRECT POLICY SITEA
+    #########################
+    - name: configure http policy set
+      avi_httppolicyset:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c1_address }}"
+        http_request_policy:
+          rules:
+          - enable: true
+            index: 1
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_criteria: CONTAINS
+                match_str:
+                - contact
+            name: Contact
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              pool_ref: /api/pool/?name=bookstore_siteA_web_vs_contact
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+        is_internal_policy: false
+        name: bookstore-siteA-HTTP-Policy-Set
+        #tenant_ref: /api/tenant/?name=Demo
+        tenant: "admin"
+
+    # Creating HTTP REDIRECT POLICY SITEB
+    #########################
+    - name: configure http policy set
+      avi_httppolicyset:
+        avi_credentials: "{{ avi_credentials }}"
+        controller: "{{ c2_address }}"
+        http_request_policy:
+          rules:
+          - enable: true
+            index: 1
+            match:
+              path:
+                match_case: INSENSITIVE
+                match_criteria: CONTAINS
+                match_str:
+                - contact
+            name: Contact
+            switching_action:
+              action: HTTP_SWITCHING_SELECT_POOL
+              pool_ref: /api/pool/?name=bookstore_siteB_web_vs_contact
+              status_code: HTTP_LOCAL_RESPONSE_STATUS_CODE_200
+        is_internal_policy: false
+        name: bookstore-siteB-HTTP-Policy-Set
+        #tenant_ref: /api/tenant/?name=Demo
+        tenant: "admin"
+
 
     # Creating two VS at SITEA
     #########################
@@ -299,6 +403,9 @@
           udf_log_throttle: 0
         application_profile_ref: /api/applicationprofile/?name=System-HTTP
         cloud_ref: /api/cloud/?name=nsxtcloud
+        http_policies:
+        - http_policy_set_ref: /api/httppolicyset/?name=bookstore-siteA-HTTP-Policy-Set
+          index: 11
         #cloud_type: CLOUD_VCENTER
         #content_rewrite:
         #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
@@ -327,9 +434,6 @@
         # this is how easy it is to enable a simple WAF policy
         #
         waf_policy_ref: https://localhost/api/wafpolicy/wafpolicy-4ba31430-c8fc-4e2e-a242-294a9d79c1e3
-
-
-
 
 
     - name: configure bookstore_siteA_app_vs
@@ -396,6 +500,11 @@
           udf_log_throttle: 0
         application_profile_ref: /api/applicationprofile/?name=System-HTTP
         cloud_ref: /api/cloud/?name=nsxtcloud
+        http_policies:
+        - http_policy_set_ref: /api/httppolicyset/?name=bookstore-siteB-HTTP-Policy-Set
+          index: 11
+        #http_policies:
+        #- http_policy_set_ref: https://localhost/api/httppolicyset/httppolicyset-d8f9135f-9914-40c2-9aa0-fe3e9d105115
         #cloud_type: CLOUD_VCENTER
         #content_rewrite:
         #  rewritable_content_ref: "/api/stringgroup/?name=System-Rewritable-Content-Types"
