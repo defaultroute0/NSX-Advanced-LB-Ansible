@@ -19,9 +19,9 @@ bookstore_siteB_app_vsvip_ip: 10.20.10.51
 
 tenant: admin
 avi_username: admin
-avi_password: VMware1!NSBU
+avi_password: xxxxxxx
 api_version: 20.1.2
 avi_credentials:
   username: admin
-  password: VMware1!NSBU
+  password: xxxxx
   api_version: 20.1.2
