@@ -130,5 +130,5 @@
         ttl: 5
         use_edns_client_subnet: false
         enabled: true
-        is_federated: true
+        #is_federated: true
         tenant: admin
