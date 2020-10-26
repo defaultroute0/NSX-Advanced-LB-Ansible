@@ -11,7 +11,7 @@ c2_address: sydprodavib.anz.sddc.local
 
 # this is for Ryans v2, WEB is autoalloc AVI IPAM, 
 # APP needs to be static VIP cause its 
-# hard codes in the app tier itself from ova deploy
+# hard coded in the app tier itself from ova deploy
 #bookstore_siteA_web_vsvip_ip: <these are AVI IPAM>
 #bookstore_siteB_web_vsvip_ip: <these are AVI IPAM>
 bookstore_siteA_app_vsvip_ip: 10.20.10.50 
