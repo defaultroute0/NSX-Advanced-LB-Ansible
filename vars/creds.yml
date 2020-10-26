@@ -1,6 +1,6 @@
 ---
 # file: vars/creds.yaml
-c1_address: sydprodavi.anz.sddc.local
+c1_address: sydprodavia.anz.sddc.local
 c2_address: sydprodavib.anz.sddc.local
 
 # this is for Ryans v1, all static VIP
@@ -19,9 +19,9 @@ bookstore_siteB_app_vsvip_ip: 10.20.10.51
 
 tenant: admin
 avi_username: admin
-avi_password: VMware1!
-api_version: 20.1.1
+avi_password: VMware1!NSBU
+api_version: 20.1.2
 avi_credentials:
   username: admin
-  password: VMware1!
-  api_version: 20.1.1
+  password: VMware1!NSBU
+  api_version: 20.1.2
